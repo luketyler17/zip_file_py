@@ -3,6 +3,7 @@ import shutil
 import logging
 from datetime import datetime
 import os
+
 # Run a program
 # Capture exit code and log success/failure
 # If success, we check the output of the folders it creates and validates that the
@@ -43,6 +44,9 @@ def main(args, input_directory):
                 # zip the entire directory
                 shutil.make_archive(date, "zip", cwd, input_directory)
                 logging.debug(f"Zipping successful -- located in {cwd}/{date} -- {datetime.now()}")
+                for folder in folder_check:
+                    os.rmdir(os.join(input_directory, folder))
+                logging.debug(f"All folders within {input_directory} have been deleted -- {datetime.now()}")
             except shutil.Error as err:
                 logging.error(f"Zipping could not be completed -- Error:{err} -- {datetime.now()}")
 
