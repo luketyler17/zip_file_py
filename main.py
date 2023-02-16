@@ -15,14 +15,8 @@ logging.basicConfig(filename='py_zip_file.log', encoding='utf-8', level=logging.
 
 
 def main(args, input_directory):
-    child = subprocess.Popen(args, stdout=subprocess.PIPE)
-    # waiting for child to complete in order to be able to access return code
-    child.wait()
-    if child.returncode != 0:
-        logging.error(f"Process call to '{' '.join(args)}' was unsuccessful - exit code {child.returncode} "
-                      f"-- {datetime.now()}")
-        print("error")
-    else:
+    try:
+        child = subprocess.check_call(args, stdout=subprocess.PIPE)
         logging.debug(f"Process call to '{' '.join(args)}' was successful -- {datetime.now()}")
         folder_check = ['foo', 'bar', 'baz', 'bam']
         # check to see that folder exists within the directory
@@ -43,12 +37,16 @@ def main(args, input_directory):
             try:
                 # zip the entire directory
                 shutil.make_archive(date, "zip", cwd, input_directory)
-                logging.debug(f"Zipping successful -- located in {cwd}/{date} -- {datetime.now()}")
+                logging.debug(f"Zipping successful -- located in {cwd}/{date} -- {datetime.now()}.zip")
                 for folder in folder_check:
-                    os.rmdir(os.join(input_directory, folder))
+                    os.rmdir(os.path.join(input_directory, folder))
                 logging.debug(f"All folders within {input_directory} have been deleted -- {datetime.now()}")
             except shutil.Error as err:
                 logging.error(f"Zipping could not be completed -- Error:{err} -- {datetime.now()}")
+    except subprocess.CalledProcessError as err:
+        logging.error(f"Process call to '{' '.join(args)}' was unsuccessful "
+                      f"-- {datetime.now()}")
+        logging.error(f"{err} -- {datetime.now()}")
 
 
 if __name__ == '__main__':
